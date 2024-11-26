@@ -1,0 +1,78 @@
+name: Sync Fork with Upstream and Deploy
+on:
+  repository_dispatch:
+    types: [sync_fork]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  actions: read
+  deployments: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: flutterflow
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Sync branches
+        run: |
+          # Save current workflows
+          mkdir -p workflow_backup
+          cp -r .github/workflows/* workflow_backup/ || true
+
+          # Sync with upstream
+          git remote add upstream https://github.com/Joel-s-Organization/IanUpwork.git
+          git fetch upstream flutterflow
+          git reset --hard upstream/flutterflow
+
+          # Restore workflows
+          rm -rf .github/workflows
+          mkdir -p .github/workflows
+          cp -r workflow_backup/* .github/workflows/ || true
+
+          # Commit and push
+          git add .github/workflows
+          git commit -m "Restore workflow files" || true
+          git push -f origin flutterflow
+
+  build-and-deploy:
+    needs: sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: flutterflow
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.0"
+
+      - name: Install dependencies
+        run: |
+          flutter config --no-analytics
+          flutter pub get
+
+      - name: Build Flutter web
+        run: flutter build web --release
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: build/web
+          force_orphan: true

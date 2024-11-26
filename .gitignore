@@ -1,0 +1,13 @@
+# Dart & Flutter tool-specific files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Build output
+build/
+
+# Other generated files
+*.iml
+*.idea/
+.packages
+

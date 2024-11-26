@@ -14,12 +14,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Install Flutter
+      # Set up Flutter using a prebuilt action
       - name: Install Flutter
-        run: |
-          git clone https://github.com/flutter/flutter.git --depth 1 -b stable /usr/local/flutter
-          echo "::add-path::/usr/local/flutter/bin"
-          flutter --version
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: stable # Use "stable" or specify a version, e.g., "3.24.4"
 
       # Install dependencies
       - name: Install dependencies

@@ -16,9 +16,6 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout code
@@ -38,9 +35,8 @@ jobs:
         run: flutter build web --release
 
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }} # Using default GITHUB_TOKEN
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: build/web
           force_orphan: true
